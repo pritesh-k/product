@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Service class for mapping data from Dummy Data API to Product entities and saving them to MongoDB.
+ */
 @Service
 public class DummyDataMapper {
 
@@ -24,14 +27,21 @@ public class DummyDataMapper {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    /**
+     * Map data from Dummy Data API to new Product entities and save them to MongoDB.
+     *
+     * @param userId The user ID associated with the new products.
+     */
     public void mapToNewTest(UUID userId) {
 
-
+        // Retrieve dummy product data from the Dummy Data API
         ResponseEntity<DummyProductParent> responseEntity = feignClient.listProducts();
 
-        List<DummyProduct> list = responseEntity.getBody().getDummyProducts();
+        // Extract the list of dummy products from the API response
+        List<DummyProduct> list = Objects.requireNonNull(responseEntity.getBody()).getDummyProducts();
 
-        for (DummyProduct dummyProduct : list){
+        // Map each dummy product to a new Product entity and save to MongoDB
+        for (DummyProduct dummyProduct : list) {
             Product newTest = new Product();
             newTest.setTitle(dummyProduct.getTitle());
             newTest.setDescription(dummyProduct.getDescription());
@@ -44,15 +54,16 @@ public class DummyDataMapper {
             newTest.setThumbnail(dummyProduct.getThumbnail());
             newTest.setImages(dummyProduct.getImages());
 
-            newTest.setId(UUID.randomUUID()); // Assuming id is not available in Product
-            newTest.setTag(null); // Assuming tag is not available in Product
-            newTest.setCreatedDate(ZonedDateTime.now(ZoneOffset.UTC)); // Assuming createdDate is not available in Product
-            newTest.setUpdatedDate(ZonedDateTime.now(ZoneOffset.UTC)); // Assuming updatedDate is not available in Product
-            newTest.setUserId(userId); // Assuming userId is not available in Product
+            // Assuming the following properties are not available in DummyProduct and need to be set in Product
+            newTest.setId(UUID.randomUUID());
+            newTest.setTag(null);
+            newTest.setCreatedDate(ZonedDateTime.now(ZoneOffset.UTC));
+            newTest.setUpdatedDate(ZonedDateTime.now(ZoneOffset.UTC));
+            newTest.setUserId(userId);
             newTest.setDummyId(dummyProduct.getId());
 
+            // Save the new Product entity to MongoDB
             mongoTemplate.save(newTest);
         }
     }
-
 }
